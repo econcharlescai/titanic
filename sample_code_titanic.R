@@ -1,14 +1,17 @@
+setwd(getwd())
+
 #1. import data
-train <- read.csv("/Users/charlescai/Documents/titanic/all/train.csv")
-submission <- read.csv("/Users/charlescai/Documents/titanic/all/test.csv")
+train_df <- read.csv("./all/train.csv")
+eval_df <- read.csv("./all/test.csv")
 
 #2. visualize data
 
 #2.1 know the variables
-str(train)
-str(submission)
+str(train_df)
+str(eval_df)
 
 #2.2 find out if there're missing values
+library(pacman)
 pacman::p_load(ggplot2)
 is.na(train)
 
