@@ -213,5 +213,6 @@ RfAr <- RfAr / 10
 #7. produce the submission file
 test_df$Embarked <- test_df$Embarked %>% as.numeric() %>% as.factor() 
 rf <- randomForest(as.factor(Survived) ~ . - PassengerId - Agebin, data = train_df, ntree = 1000, mtry = 2, importance = TRUE)
-test_df$Prediction <- predict(rf, test_df, type = "class")
-submission <- subset(test_df, select = c(PassengerId,Prediction)) 
+test_df$Survived <- predict(rf, test_df, type = "class")
+submission <- subset(test_df, select = c(PassengerId,Survived))
+write.csv(submission, 'submission.csv', row.names=FALSE)
