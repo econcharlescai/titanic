@@ -14,25 +14,12 @@ train_df <- read.csv("./all/train.csv", na.strings = '')
 test_df <- read.csv("./all/test.csv", na.strings = '')
 
 #2. clean the data
->>>>>>> 18aee355918219dfb621863828d777ac37068beb
 
 #2.1 get familiar with the dataset
 str(train_df)
 str(test_df)
-summary(train_df)
+
 train_df$Pclass <- factor(train_df$Pclass)
-
-<<<<<<< HEAD
-#2.1 know the variables
-str(train_df)
-str(eval_df)
-
-#2.2 find out if there're missing values
-library(pacman)
-pacman::p_load(ggplot2)
-is.na(train)
-=======
-summary(test_df)
 test_df$Pclass <- factor(test_df$Pclass)
 
 #2.2 find out if there're missing values
@@ -63,7 +50,6 @@ test_df <- test_df %>%
   mutate(Age = ifelse(Age <= 0, 1, Age))
 rm(age_df)
 rm(fit)
->>>>>>> 18aee355918219dfb621863828d777ac37068beb
 
 #2.3.2 To predict Embarked, use Age, Fare, Sex, Pclass. Method: multinomial regression.
 pacman::p_load(nnet)
@@ -98,49 +84,49 @@ test_df$Fam <- test_df$Parch + test_df$SibSp
 test_df <- test_df %>%
   subset(select=-c(Parch, SibSp))
 
-# #3. visualize the data
-# 
-# #3.1 see patterns of survival (Sex, Embarked, Pclass, Parch, Sibsp)
-# pacman::p_load(ggplot2)
-# survive_plot <- ggplot(data = train_df, aes(x = Survived)) 
-# survive_plot + geom_bar() 
-# survive_plot + geom_bar(aes(fill = Sex), position = "dodge") + scale_fill_brewer(palette = "Blues") 
-# survive_plot + geom_bar(aes(fill = Pclass), position = "dodge") 
-# 
-# survive_plot2 <- ggplot(data = train_df, aes(y = Survived))
-# survive_plot2 + stat_summary(aes(x = Pclass, color = Sex), fun.y = "mean", geom = "point")
-# survive_plot2 + stat_summary(aes(x = Embarked, color = Sex), fun.y = "mean", geom = "point")
+#3. visualize the data
+
+#3.1 see patterns of survival (Sex, Embarked, Pclass, Parch, Sibsp)
+pacman::p_load(ggplot2)
+survive_plot <- ggplot(data = train_df, aes(x = Survived))
+survive_plot + geom_bar()
+survive_plot + geom_bar(aes(fill = Sex), position = "dodge") + scale_fill_brewer(palette = "Blues")
+survive_plot + geom_bar(aes(fill = as.factor(Pclass)), position = "dodge")
+
+survive_plot2 <- ggplot(data = train_df, aes(y = Survived))
+survive_plot2 + stat_summary(aes(x = Pclass, color = Sex), fun.y = "mean", geom = "point")
+survive_plot2 + stat_summary(aes(x = Embarked, color = Sex), fun.y = "mean", geom = "point")
+survive_plot2 + stat_summary(aes(x = Agebin, color = Sex),  fun.y = "mean", geom = "point")
 
 #4. split train and test set
 # use 70% for train and 30% for test
 train_size <- floor(0.7*nrow(train_df))
-
+pacman::p_load(e1071)
 #5. different models and evaluation of models
 #5.1 logistic regression
 pacman::p_load(caret)
 
 LogitAr <- 0
-for (i in 1:10){
 set.seed(123) 
-trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
-train_set <- train_df[trainrows,]
-test_set <- train_df[-trainrows,]
+for (i in 1:10){
+  trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
+  train_set <- train_df[trainrows,]
+  test_set <- train_df[-trainrows,]
 
-logreg <- glm(Survived ~ . - PassengerId - Age, data = train_set)
-Logit <- predict.glm(logreg, newdata = test_set, type="response")
-Logit <- ifelse(Logit > 0.5, 1, 0)
-cm <- confusionMatrix(table(Logit, test_set$Survived))
-LogitAr <- LogitAr + cm$overall['Accuracy']
+  logreg <- glm(Survived ~ . - PassengerId - Age, data = train_set)
+  Logit <- predict.glm(logreg, newdata = test_set, type="response")
+  Logit <- ifelse(Logit > 0.5, 1, 0)
+  cm <- confusionMatrix(table(Logit, test_set$Survived))
+  LogitAr <- LogitAr + cm$overall['Accuracy']
 }  
 LogitAr <- LogitAr / 10
 
-
-
 #5.2 Gaussian Naive Bayes
-pacman::p_load(e1071)
+
 GnbAr <- 0
+set.seed(123)
 for (i in 1:10){
-  set.seed(123) 
+   
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
@@ -153,9 +139,11 @@ GnbAr <- GnbAr / 10
   
 
 #5.3 KNN
+pacman::p_load(class)
 KnnAr <- 0
+set.seed(123) 
 for (i in 1:10){
-  set.seed(123) 
+
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
@@ -184,8 +172,9 @@ KnnAr <- KnnAr / 10
 pacman::p_load(tree)
 
 TreeAr <- 0
+set.seed(123) 
 for (i in 1:10){
-  set.seed(123) 
+
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
@@ -205,8 +194,9 @@ TreeAr <- TreeAr / 10
 #5.5 random forest 
 pacman::p_load(randomForest)
 RfAr <- 0
+set.seed(123) 
 for (i in 1:10){
-  set.seed(123) 
+  
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
@@ -217,11 +207,12 @@ for (i in 1:10){
 }  
 RfAr <- RfAr / 10
 
-
-
-
-
 #6. choose the best models from 5 (random forest in this case)
+ar_df <- as.data.frame(t(data.frame(LogitAr, GnbAr, KnnAr, TreeAr, RfAr)))
+ar_df$Model <- rownames(ar_df)
+ggplot(data=ar_df, aes(x = Model, y = Accuracy)) + geom_col()
+
+
 #7. produce the submission file
 test_df$Embarked <- test_df$Embarked %>% as.numeric() %>% as.factor() 
 rf <- randomForest(as.factor(Survived) ~ . - PassengerId - Agebin, data = train_df, ntree = 1000, mtry = 2, importance = TRUE)
