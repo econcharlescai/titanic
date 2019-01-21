@@ -93,10 +93,15 @@ survive_plot + geom_bar()
 survive_plot + geom_bar(aes(fill = Sex), position = "dodge") + scale_fill_brewer(palette = "Blues")
 survive_plot + geom_bar(aes(fill = as.factor(Pclass)), position = "dodge")
 
-survive_plot2 <- ggplot(data = train_df, aes(y = Survived))
-survive_plot2 + stat_summary(aes(x = Pclass, color = Sex), fun.y = "mean", geom = "point")
-survive_plot2 + stat_summary(aes(x = Embarked, color = Sex), fun.y = "mean", geom = "point")
-survive_plot2 + stat_summary(aes(x = Agebin, color = Sex),  fun.y = "mean", geom = "point")
+ggplot(data = train_df, aes(x = Pclass, y = Survived, group = Sex)) + 
+  stat_summary(aes(color = Sex), fun.y = "mean", geom = "point") + 
+  stat_summary(aes(color = Sex), fun.y = "mean", geom = "line")
+ggplot(data = train_df, aes(y = Survived)) + 
+  stat_summary(aes(x = Embarked, color = Sex), fun.y = "mean", geom = "point")
+ggplot(data = train_df, aes(x = Agebin, y = Survived, group = Sex)) + 
+  stat_summary(aes(color = Sex), fun.y = "mean", geom = "point") + 
+  stat_summary(aes(color = Sex), fun.y = "mean", geom = "line")
+
 
 #4. split train and test set
 # use 70% for train and 30% for test
@@ -108,13 +113,14 @@ pacman::p_load(caret)
 
 LogitAr <- 0
 set.seed(123) 
+
 for (i in 1:10){
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
 
   logreg <- glm(Survived ~ . - PassengerId - Age, data = train_set)
-  Logit <- predict.glm(logreg, newdata = test_set, type="response")
+  Logit <- predict.glm(logreg, newdata = test_set, type = "response")
   Logit <- ifelse(Logit > 0.5, 1, 0)
   cm <- confusionMatrix(table(Logit, test_set$Survived))
   LogitAr <- LogitAr + cm$overall['Accuracy']
@@ -125,11 +131,11 @@ LogitAr <- LogitAr / 10
 
 GnbAr <- 0
 set.seed(123)
+
 for (i in 1:10){
-   
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
-  train_set <- train_df[trainrows,]
-  test_set <- train_df[-trainrows,]
+  train_set <- train_df[trainrows, ]
+  test_set <- train_df[-trainrows, ]
   gnb <- naiveBayes(as.factor(Survived) ~ Pclass + Sex + Agebin, data = train_set)
   Gnb <- predict(gnb, newdata = test_set)
   cm <- confusionMatrix(table(Gnb, test_set$Survived))
@@ -137,16 +143,15 @@ for (i in 1:10){
 }  
 GnbAr <- GnbAr / 10
   
-
 #5.3 KNN
 pacman::p_load(class)
 KnnAr <- 0
 set.seed(123) 
-for (i in 1:10){
 
+for (i in 1:10){
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
-  train_set <- train_df[trainrows,]
-  test_set <- train_df[-trainrows,]
+  train_set <- train_df[trainrows, ]
+  test_set <- train_df[-trainrows, ]
   train_knn <- subset(train_set, select = c(Survived, Age, Fare, Pclass, Fam, Sex))
   test_knn <- subset(test_set, select = c(Survived, Age, Fare, Pclass, Fam, Sex))
 
@@ -154,12 +159,11 @@ for (i in 1:10){
   train_knn$Pclass <- train_knn$Pclass %>% 
     as.numeric()
 
-
   test_knn$Sex <- ifelse(test_knn$Sex == "male", 1, 0)
   test_knn$Pclass <- test_knn$Pclass %>% 
     as.numeric()
-  train_knn$Survived <- train_knn$Survived %>% as.factor(.)
-  test_knn$Survived <- test_knn$Survived %>% as.factor(.)
+  train_knn$Survived <- train_knn$Survived %>% as.factor()
+  test_knn$Survived <- test_knn$Survived %>% as.factor()
 
   Prdknn <- knn(train = train_knn, test = test_knn, cl = train_knn$Survived, k=5)
   cm <- confusionMatrix(table(Prdknn, test_set$Survived))
@@ -173,15 +177,15 @@ pacman::p_load(tree)
 
 TreeAr <- 0
 set.seed(123) 
-for (i in 1:10){
 
+for (i in 1:10){
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
   train_tr <- train_set
   test_tr <- test_set
-  train_tr$Survived <- train_tr$Survived %>% as.factor(.)
-  test_tr$Survived <- test_tr$Survived %>% as.factor(.)
+  train_tr$Survived <- train_tr$Survived %>% as.factor()
+  test_tr$Survived <- test_tr$Survived %>% as.factor()
 
   tr <- tree(Survived ~ . - PassengerId - Age, data = train_tr )
   Tr <- predict(tr, test_tr, type = "class")
@@ -196,7 +200,6 @@ pacman::p_load(randomForest)
 RfAr <- 0
 set.seed(123) 
 for (i in 1:10){
-  
   trainrows <- sample(seq_len(nrow(train_df)), size = train_size)
   train_set <- train_df[trainrows,]
   test_set <- train_df[-trainrows,]
